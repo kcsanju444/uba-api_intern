@@ -9,12 +9,15 @@ This project implements a basic CRUD (Create, Read, Update, Delete) operation AP
 - MongoDB (MongoDB Atlas)
 
 ## Getting Started
+
 ## Install Dependencies
 npm install
 
 ## Start the Application
 npm run dev
+
 **Make sure to create:**
 .env
-Contents of .env:
+
+## Contents of .env:
 mongodb+srv://kcsanju600:<db_password>@cluster0.i5sifu9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
