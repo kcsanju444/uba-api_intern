@@ -5,6 +5,9 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+dotenv.config();
 const app = express();
 app.use(cors({
     credentials:true,
@@ -17,7 +20,19 @@ const server = http.createServer(app);
 server.listen(8080,()=>{
     console.log('server running on http://localhost:8080/');
 });
-const MONGO_URL='mongodb+srv://kcsanju600:Q8CDDOyqzZdJ7SHp@cluster0.3qtlq2r.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-mongoose.Promise=Promise;
+const MONGO_URL = process.env.MONGO_URL;
+
+if (!MONGO_URL) {
+  throw new Error('MONGO_URL is not defined in .env');
+}
+
+mongoose.Promise = Promise;
 mongoose.connect(MONGO_URL);
-mongoose.connection.on('error',(error:Error)=>console.log(error));
+
+mongoose.connection.on('connected', () => {
+  console.log(' Connected to MongoDB');
+});
+
+mongoose.connection.on('error', (error: Error) => {
+  console.error(' MongoDB connection error:', error);
+});
