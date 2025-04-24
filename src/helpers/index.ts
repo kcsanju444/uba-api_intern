@@ -1,12 +1,17 @@
-import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const SECRET = "SANJU-REST-API";
+const SALT_ROUNDS = 10;  // You can adjust the number of salt rounds as needed
 
-export const random = () => crypto.randomBytes(128).toString('base64');
+// Generate a random salt using bcrypt
+export const random = async (): Promise<string> => {
+  const salt = await bcrypt.genSalt(SALT_ROUNDS);
+  return salt;
+};
 
-export const authentication = (salt: string, password: string): string => {
-    return crypto
-        .createHmac('sha256', [salt, password].join('/'))
-        .update(SECRET)
-        .digest('hex');
+// Hash the password using bcrypt
+export const authentication = async (salt: string, password: string): Promise<string> => {
+  const hashedPassword = await bcrypt.hash(password, salt);
+  return hashedPassword;
 };
