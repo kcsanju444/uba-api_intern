@@ -131,20 +131,21 @@ const resolver = {
     deleteEmployee: (_: any, args: { id: string }) => {
       return new Promise((resolve, reject) => {
         const { id } = args;
-
+    
         con.query('DELETE FROM employee WHERE id = ?', [id], (err, result) => {
           if (err) {
             reject(new Error('Database error: ' + err.message));
           } else {
             if (result.affectedRows === 0) {
-              reject(new Error('Employee not found'));
+              resolve(false);
             } else {
-              resolve({ message: `Employee with ID ${id} has been deleted.` });
+              resolve(true);
             }
           }
         });
       });
     },
+    
   },
 };
 
