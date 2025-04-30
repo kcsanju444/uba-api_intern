@@ -1,4 +1,3 @@
-// src/graphql/query/employeeQueries.ts
 
 export const getAllEmployees = 'SELECT * FROM employee';
 
