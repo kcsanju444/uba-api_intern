@@ -48,6 +48,7 @@ export const createOne = async (_tableName: string, data: any, res: Response) =>
 };
 
 export const updateOne = async (_tableName: string, id: string, data: any, res: Response) => {
+  // Ensure image is passed correctly (or set it to NULL if undefined or null)
   const values = [
     data.name,
     data.email,
@@ -56,17 +57,18 @@ export const updateOne = async (_tableName: string, id: string, data: any, res: 
     data.department,
     data.address,
     data.salary,
-    data.image,
-    id 
+    data.image || null // If no image is provided, use NULL
   ];
-  
-  con.query(updateEmployeeById, values, (err, _result) => {
+
+  // Correct order and passing 'id' as last parameter in the query
+  con.query(updateEmployeeById, [...values, id], (err, result) => {
     if (err) {
       return res.status(400).json({ message: 'Error updating item', error: err });
     }
     res.status(200).json({ success: true, message: 'Item updated', data: { id, ...data } });
   });
 };
+
 
 export const deleteOne = async (_tableName: string, id: string, res: Response) => {
   con.query(deleteEmployeeById, [id], (err, result) => {
