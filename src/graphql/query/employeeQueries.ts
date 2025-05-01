@@ -18,7 +18,7 @@ export const updateEmployeeById = `
     department = ?, 
     address = ?, 
     salary = ?, 
-    image = ? 
+    image = ,
   WHERE id = ?
 `;
 
