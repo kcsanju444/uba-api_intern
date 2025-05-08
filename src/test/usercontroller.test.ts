@@ -1,8 +1,27 @@
-import { getUserById, getUsers } from "../controller/usercntroller";
+import { createUser, getUserById, getUsers } from "../controller/usercntroller";
 import db from "../graphql/db";
+import bcrypt from "bcrypt";
 import { Request, Response } from "express";
+import {
+  getAllEmployees,
+  getEmployeeById,
+  insertEmployee,
+} from "../graphql/query/employeeQueries";
 
-jest.mock("../graphql/db");
+jest.mock("../graphql/db", () => ({
+  __esModule: true,
+  default: {
+    query: jest.fn(),
+  },
+}));
+
+jest.mock("bcrypt", () => ({
+  __esModule: true,
+  default: {
+    hash: jest.fn(),
+  },
+  hash: jest.fn(), // for named import compatibility
+}));
 
 describe("User Controller Tests", () => {
   let req: Partial<Request>;
@@ -16,18 +35,23 @@ describe("User Controller Tests", () => {
     };
 
     (db.query as jest.Mock).mockClear();
+    (bcrypt.hash as jest.Mock).mockClear();
   });
 
   it("should return all users", async () => {
-    const mockUsers = [{ id: 1,
-      name: 'Sanju',
-      email: 'sanju@example.com',
-      password: 'securepass',
-      position: 'Developer',
-      department: 'Engineering',
-      address: 'Kathmandu, Nepal',
-      salary: 50000.0,
-      image: 'profile1.jpg', }];
+    const mockUsers = [
+      {
+        id: 1,
+        name: "Sanju",
+        email: "sanju@example.com",
+        password: "securepass",
+        position: "Developer",
+        department: "Engineering",
+        address: "Kathmandu, Nepal",
+        salary: 50000.0,
+        image: "profile1.jpg",
+      },
+    ];
 
     (db.query as jest.Mock).mockImplementation((sql, callback) => {
       callback(null, mockUsers);
@@ -35,10 +59,7 @@ describe("User Controller Tests", () => {
 
     await getUsers(req as Request, res as Response);
 
-    expect(db.query).toHaveBeenCalledWith(
-      "SELECT * FROM employee",
-      expect.any(Function)
-    );
+    expect(db.query).toHaveBeenCalledWith(getAllEmployees, expect.any(Function));
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -47,32 +68,78 @@ describe("User Controller Tests", () => {
     });
   });
 
-  it("should return by id", async () => {
-    const mockUsers = [{  id: 1,
-      name: 'Sanju',
-      email: 'sanju@example.com',
-      password: 'securepass',
-      position: 'Developer',
-      department: 'Engineering',
-      address: 'Kathmandu, Nepal',
+  it("should return user by id", async () => {
+    const mockUser = {
+      name: "Sanju",
+      email: "sanju@example.com",
+      password: "securepass",
+      position: "Developer",
+      department: "Engineering",
+      address: "Kathmandu, Nepal",
       salary: 50000.0,
-      image: 'profile1.jpg', }];
-    (db.query as jest.Mock).mockImplementation((sql, value, callback) => {
-      callback(null, [mockUsers]);
+      image: "profile1.jpg",
+    };
+
+    (db.query as jest.Mock).mockImplementation((sql, values, callback) => {
+      callback(null, [mockUser]);
     });
+
     req = { params: { id: "1" } };
+
     await getUserById(req as Request, res as Response);
-    expect(db.query).toHaveBeenCalledWith(
-      "SELECT * FROM employee WHERE id = ?",
-      ["1"],
-      expect.any(Function)
-    );
+
+    expect(db.query).toHaveBeenCalledWith(getEmployeeById, ["1"], expect.any(Function));
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
       message: "Item fetched",
-      data: mockUsers,
+      data: mockUser,
     });
   });
-  
+
+  it("should create a new user", async () => {
+    const mockUserInput = {
+      name: "Sanju",
+      email: "sanju@example.com",
+      password: "123456",
+      position: "Developer",
+      department: "Engineering",
+      address: "Kathmandu",
+      salary: 60000,
+      image: "image.png",
+    };
+
+    const hashedPassword = "hashed123";
+    (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
+
+    (db.query as jest.Mock).mockImplementation((sql, values, callback) => {
+      callback(null, { insertId: 42 });
+    });
+
+    req = { body: mockUserInput };
+
+    await createUser(req as Request, res as Response);
+
+    expect(bcrypt.hash).toHaveBeenCalledWith("123456", 10);
+    expect(db.query).toHaveBeenCalledWith(
+      insertEmployee,
+      [
+        mockUserInput.name,
+        mockUserInput.email,
+        hashedPassword,
+        mockUserInput.position,
+        mockUserInput.department,
+        mockUserInput.address,
+        mockUserInput.salary,
+        mockUserInput.image,
+      ],
+      expect.any(Function)
+    );
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      message: "Item created",
+      data: { id: 42, ...mockUserInput },
+    });
+  });
 });
