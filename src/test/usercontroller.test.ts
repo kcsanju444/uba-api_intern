@@ -19,7 +19,15 @@ describe("User Controller Tests", () => {
   });
 
   it("should return all users", async () => {
-    const mockUsers = [{ id: 1, name: "Sanju", position: "developer" }];
+    const mockUsers = [{ id: 1,
+      name: 'Sanju',
+      email: 'sanju@example.com',
+      password: 'securepass',
+      position: 'Developer',
+      department: 'Engineering',
+      address: 'Kathmandu, Nepal',
+      salary: 50000.0,
+      image: 'profile1.jpg', }];
 
     (db.query as jest.Mock).mockImplementation((sql, callback) => {
       callback(null, mockUsers);
@@ -40,7 +48,15 @@ describe("User Controller Tests", () => {
   });
 
   it("should return by id", async () => {
-    const mockUsers = [{ id: 1, name: "sanju" }];
+    const mockUsers = [{  id: 1,
+      name: 'Sanju',
+      email: 'sanju@example.com',
+      password: 'securepass',
+      position: 'Developer',
+      department: 'Engineering',
+      address: 'Kathmandu, Nepal',
+      salary: 50000.0,
+      image: 'profile1.jpg', }];
     (db.query as jest.Mock).mockImplementation((sql, value, callback) => {
       callback(null, [mockUsers]);
     });
