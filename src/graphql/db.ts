@@ -1,5 +1,5 @@
-import mysql from 'mysql';
-import dotenv from 'dotenv';
+import * as mysql from 'mysql';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -10,12 +10,15 @@ const con = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
-con.connect((err) => {
-  if (err) {
-    console.log('Connection error:', err);
-  } else {
-    console.log('Connected to MySQL database');
-  }
-});
+// Only connect if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  con.connect((err) => {
+    if (err) {
+      console.log('Connection error:', err);
+    } else {
+      console.log('Connected to MySQL database');
+    }
+  });
+}
 
 export default con;
