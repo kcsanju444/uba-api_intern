@@ -1,4 +1,4 @@
-import { createUser, getUserById, getUsers } from "../controller/usercntroller";
+import { createUser, getUserById, getUsers, updateUser } from "../controller/usercntroller";
 import db from "../graphql/db";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
@@ -6,7 +6,11 @@ import {
   getAllEmployees,
   getEmployeeById,
   insertEmployee,
+  updateEmployeeById,
 } from "../graphql/query/employeeQueries";
+import { ParamsDictionary } from "express-serve-static-core";
+import { ParsedQs } from "qs";
+import { updateOne } from "../helper/userHelper";
 
 jest.mock("../graphql/db", () => ({
   __esModule: true,
@@ -20,7 +24,7 @@ jest.mock("bcrypt", () => ({
   default: {
     hash: jest.fn(),
   },
-  hash: jest.fn(), // for named import compatibility
+  hash: jest.fn(),
 }));
 
 describe("User Controller Tests", () => {
@@ -59,7 +63,10 @@ describe("User Controller Tests", () => {
 
     await getUsers(req as Request, res as Response);
 
-    expect(db.query).toHaveBeenCalledWith(getAllEmployees, expect.any(Function));
+    expect(db.query).toHaveBeenCalledWith(
+      getAllEmployees,
+      expect.any(Function)
+    );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -88,7 +95,11 @@ describe("User Controller Tests", () => {
 
     await getUserById(req as Request, res as Response);
 
-    expect(db.query).toHaveBeenCalledWith(getEmployeeById, ["1"], expect.any(Function));
+    expect(db.query).toHaveBeenCalledWith(
+      getEmployeeById,
+      ["1"],
+      expect.any(Function)
+    );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -142,4 +153,58 @@ describe("User Controller Tests", () => {
       data: { id: 42, ...mockUserInput },
     });
   });
+
+ it("should update user by id", async () => {
+  const mockUserInput = {
+    name: "ranju",
+    email: "ranju@example.com",
+    password: "7890",
+    position: "designer",
+    department: "it",
+    address: "nepal",
+    salary: 80000,
+    image: "img.png",
+  };
+
+  const hashedPassword = "hash12345";
+  (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
+
+  (db.query as jest.Mock).mockImplementation((sql, values, callback) => {
+    callback(null, { affectedRows: 1 });
+  });
+
+  req = {
+    params: { id: "42" },
+    body: mockUserInput,
+  };
+
+  await updateUser(req as Request, res as Response);
+
+  expect(bcrypt.hash).toHaveBeenCalledWith("7890", 10);
+  expect(db.query).toHaveBeenCalledWith(
+    updateEmployeeById,
+    [
+      mockUserInput.name,
+      mockUserInput.email,
+      hashedPassword,
+      mockUserInput.position,
+      mockUserInput.department,
+      mockUserInput.address,
+      mockUserInput.salary,
+      mockUserInput.image,
+      "42",
+    ],
+    expect.any(Function)
+  );
+
+  expect(res.status).toHaveBeenCalledWith(200);
+  expect(res.json).toHaveBeenCalledWith({
+    success: true,
+    message: "Item updated",
+    data: { id: "42", ...mockUserInput },
+  });
 });
+});
+
+
+
