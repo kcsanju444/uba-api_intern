@@ -22,4 +22,8 @@ export const updateEmployeeById = `
   WHERE id = ?
 `;
 
+<<<<<<< HEAD
 export const deleteEmployeeById = 'DELETE FROM employee WHERE id = ?';
+=======
+export const deleteEmployeeById = 'DELETE FROM employee WHERE id = ?';
+>>>>>>> 6255d23d529bd9c4947994d5f56a50ab2aaafac6

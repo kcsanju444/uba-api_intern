@@ -10,6 +10,7 @@ const con = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
+<<<<<<< HEAD
 // Only connect if not in test environment
 if (process.env.NODE_ENV !== 'test') {
   con.connect((err) => {
@@ -20,5 +21,14 @@ if (process.env.NODE_ENV !== 'test') {
     }
   });
 }
+=======
+con.connect((err) => {
+  if (err) {
+    console.log('Connection error:', err);
+  } else {
+    console.log('Connected to MySQL database');
+  }
+});
+>>>>>>> 6255d23d529bd9c4947994d5f56a50ab2aaafac6
 
 export default con;
