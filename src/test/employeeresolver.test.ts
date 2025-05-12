@@ -1,5 +1,5 @@
 import resolver from "../graphql/resolver/employeeresolver";
-import { getAllEmployees, getEmployeeById, insertEmployee } from "../graphql/query/employeeQueries";
+import { getAllEmployees, getEmployeeById, insertEmployee, updateEmployeeById } from "../graphql/query/employeeQueries";
 import db from "../graphql/db";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
@@ -132,4 +132,54 @@ const result = await resolver.Mutation.addEmployee(null, { input: mockUserInput 
     password: hashedPassword,
   });
 });
+it('should update a user by ID', async () => {
+  const userId = "42"; // Assuming ID is a string
+  const mockUserUpdateInput = {
+    name: "Sanju Updated",
+    email: "sanju.updated@example.com",
+    password: "newpassword",
+    position: "Senior Developer",
+    department: "Engineering",
+    address: "Lalitpur, Nepal",
+    salary: 70000.0,
+    image: "profile_updated.jpg",
+  };
+
+  const hashedPassword = "newhashed123";
+  (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
+
+  // Mock db.query to simulate successful update
+  (db.query as jest.Mock).mockImplementation((sql, values, callback) => {
+    callback(null, { affectedRows: 1 });
+  });
+
+  const result = await resolver.Mutation.updateEmployee(null, {
+    id: userId,
+    updates: mockUserUpdateInput,
+  });
+
+  expect(bcrypt.hash).toHaveBeenCalledWith("newpassword", 10);
+  expect(db.query).toHaveBeenCalledWith(
+    updateEmployeeById,
+    [
+      mockUserUpdateInput.name,
+      mockUserUpdateInput.email,
+      hashedPassword,
+      mockUserUpdateInput.position,
+      mockUserUpdateInput.department,
+      mockUserUpdateInput.address,
+      mockUserUpdateInput.salary,
+      mockUserUpdateInput.image,
+      userId,
+    ],
+    expect.any(Function)
+  );
+
+  expect(result).toEqual({
+    id: userId,
+    ...mockUserUpdateInput,
+    password: hashedPassword,
+  });
+});
+
 });
