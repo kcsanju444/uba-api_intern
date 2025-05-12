@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import con from '../../graphql/db';
-=======
-import con from '../db';
->>>>>>> 6255d23d529bd9c4947994d5f56a50ab2aaafac6
 import bcrypt from 'bcrypt';
 import {
   getAllEmployees,
@@ -120,3 +116,4 @@ const resolver = {
 };
 
 export default resolver;
+ 
