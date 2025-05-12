@@ -10,7 +10,7 @@ import {
 
 const resolver = {
   Query: {
-    employeeList() {
+ employeeList() {
       return new Promise((resolve, reject) => {
         con.query(getAllEmployees, (err, result) => {
           if (err) reject(new Error('Database error: ' + err.message));
