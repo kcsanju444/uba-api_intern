@@ -1,5 +1,5 @@
 import resolver from "../graphql/resolver/employeeresolver";
-import { getAllEmployees, getEmployeeById } from "../graphql/query/employeeQueries";
+import { getAllEmployees, getEmployeeById, insertEmployee } from "../graphql/query/employeeQueries";
 import db from "../graphql/db";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
@@ -88,5 +88,48 @@ it("should show employee by id", async () => {
   expect(db.query).toHaveBeenCalledWith(getEmployeeById, [1], expect.any(Function));
   expect(result).toEqual(mockUser); 
   
+});
+it('should create a user', async () => {
+  const mockUserInput = {
+    name: "Sanju",
+    email: "sanju@example.com",
+    password: "123456",
+    position: "Developer",
+    department: "Engineering",
+    address: "Kathmandu, Nepal",
+    salary: 50000.0,
+    image: "profile1.jpg",
+  };
+
+  const hashedPassword = "hashed123";
+  (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
+
+  (db.query as jest.Mock).mockImplementation((sql, values, callback) => {
+    callback(null, { insertId: 42 });
+  });
+
+const result = await resolver.Mutation.addEmployee(null, { input: mockUserInput });
+
+  expect(bcrypt.hash).toHaveBeenCalledWith("123456", 10);
+  expect(db.query).toHaveBeenCalledWith(
+    insertEmployee,
+    [
+      mockUserInput.name,
+      mockUserInput.email,
+      hashedPassword,
+      mockUserInput.position,
+      mockUserInput.department,
+      mockUserInput.address,
+      mockUserInput.salary,
+      mockUserInput.image,
+    ],
+    expect.any(Function)
+  );
+
+  expect(result).toEqual({
+    id: 42,
+    ...mockUserInput,
+    password: hashedPassword,
+  });
 });
 });
