@@ -1,8 +1,9 @@
 import resolver from "../graphql/resolver/employeeresolver";
-import { getAllEmployees } from "../graphql/query/employeeQueries";
+import { getAllEmployees, getEmployeeById } from "../graphql/query/employeeQueries";
 import db from "../graphql/db";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
+import { Mock } from "node:test";
 
 jest.mock("../graphql/db", () => ({
   __esModule: true,
@@ -48,8 +49,6 @@ describe("Employee Resolver Tests", () => {
         image: "profile1.jpg",
       },
     ];
-
-    // Simulate db.query call
     (db.query as jest.Mock).mockImplementation((sql, callback) => {
       callback(null, mockUsers);
     });
@@ -64,9 +63,30 @@ describe("Employee Resolver Tests", () => {
     (db.query as jest.Mock).mockImplementation((sql, callback) => {
       callback(new Error("Connection failed"), null);
     });
-
     await expect(resolver.Query.employeeList()).rejects.toThrow("Database error: Connection failed");
   });
+it("should show employee by id", async () => {
+  const mockUser = {
+    id: 1,
+    name: "Sanju",
+    email: "sanju@example.com",
+    password: "securepass",
+    position: "Developer",
+    department: "Engineering",
+    address: "Kathmandu, Nepal",
+    salary: 50000.0,
+    image: "profile1.jpg",
+  };
 
+  (db.query as jest.Mock).mockImplementation((sql, values, callback) => {
+    callback(null, [mockUser]);
+  });
 
+  const args = { id: 1 }; 
+  const result = await resolver.Query.employee(null, args);
+
+  expect(db.query).toHaveBeenCalledWith(getEmployeeById, [1], expect.any(Function));
+  expect(result).toEqual(mockUser); 
+  
+});
 });
