@@ -1,20 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
+    "target": "ES2021",
+    "module": "CommonJS",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-
-    "strictPropertyInitialization": false,
-
-    "baseUrl": "./",
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
-  "include": ["src/**/*"]
+    "outDir": "./dist"
+  }
 }

@@ -1,23 +1,17 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
-import { Internship } from "./Internship";
+import { Internship } from "./internshipentities";
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  first_name: string;
+  name!: string;
 
   @Column()
-  last_name: string;
+  email!: string;
 
-  @Column({ unique: true })
-  email: string;
-
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
-  created_at: Date;
-
-  @OneToMany(() => Internship, (internship) => internship.user)
-  internships: Internship[];
+  @OneToMany(() => Internship, (internship: Internship) => internship.user)
+  internships!: Internship[];
 }
