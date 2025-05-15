@@ -6,11 +6,12 @@ export class Internship {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: "date" })
-  joined_date!: string;
+ @Column({ type: "date" })
+joined_date!: Date;
 
-  @Column({ type: "date" })
-  completion_date!: string;
+@Column({ type: "date" })
+completion_date!: Date;
+
 
   @Column()
   is_certified!: boolean;
