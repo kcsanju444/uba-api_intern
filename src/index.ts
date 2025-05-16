@@ -1,49 +1,50 @@
-import express from "express";
+import "reflect-metadata";
+import express, { Application } from "express";
 import http from "http";
 import compression from "compression";
 import dotenv from "dotenv";
+import { buildSchema } from "type-graphql";
 import { graphqlHTTP } from "express-graphql";
-import { makeExecutableSchema } from "@graphql-tools/schema";
 
-import { typeDefs } from "./graphql/schema";
-import resolver from "../src/graphql/resolver/employeeresolver";
-
-import router from "./router/router";
-// import userroutes from "./router/internroutes";
-
+import { UserResolver, InternshipResolver } from "./graphql/resolver/typeormreslver";
 import { AppDataSource } from "./data-source";
+import router from "./router/router";
 
 dotenv.config();
 
-const app = express();
-app.use(compression());
+async function main() {
+  // Initialize DB connection
+  await AppDataSource.initialize();
+  console.log("TypeORM Data Source initialized");
 
-AppDataSource.initialize()
-  .then(() => {
-    console.log("TypeORM Data Source initialized");
-
-    const server = http.createServer(app);
-    server.listen(8080, () => {
-      console.log("Server running on http://localhost:8080/");
-    });
-
-    const schema = makeExecutableSchema({
-      typeDefs,
-      resolvers: resolver,
-    });
-
-    app.use(
-      "/graphql",
-      graphqlHTTP({
-        schema: schema,
-        graphiql: true,
-      })
-    );
-
-    app.use("/api/auth", router);
-
-    // app.use("/api/users", userroutes);
-  })
-  .catch((error) => {
-    console.error("Error during Data Source initialization", error);
+  // Build GraphQL schema with resolvers
+  const schema = await buildSchema({
+    resolvers: [UserResolver, InternshipResolver],
   });
+
+  // Create Express app and type explicitly
+  const app: Application = express();
+  app.use(compression());
+
+  // Apply GraphQL middleware (without Apollo)
+  app.use(
+    "/graphql",
+    graphqlHTTP({
+      schema: schema,
+      graphiql: true, // enables the GraphiQL UI at /graphql
+    })
+  );
+
+  // Your other REST routes
+  app.use("/api/auth", router);
+
+  // Create HTTP server and listen
+  const httpServer = http.createServer(app);
+  httpServer.listen(8080, () => {
+    console.log("Server running on http://localhost:8080/graphql");
+  });
+}
+
+main().catch((error) => {
+  console.error("Error starting server:", error);
+});

@@ -1,29 +1,28 @@
-import { AppDataSource } from "../data-source";  
-import { User } from "../entities/userentities";
+import { AppDataSource } from "../data-source";
 import { Internship } from "../entities/internshipentities";
 
-async function main() {
+async function fixOldInternshipDates() {
   await AppDataSource.initialize();
-
-  const userRepository = AppDataSource.getRepository(User);
   const internshipRepository = AppDataSource.getRepository(Internship);
 
-  const user = new User();
-  user.name = "sanju kc";
-  user.email = "sanju@example.com";
+  const internships = await internshipRepository.find();
+  for (const internship of internships) {
+    internship.joined_date = new Date(
+      new Date(internship.joined_date).toISOString().split("T")[0] + "T00:00:00.000Z"
+    );
+    internship.completion_date = new Date(
+      new Date(internship.completion_date).toISOString().split("T")[0] + "T00:00:00.000Z"
+    );
 
-  await userRepository.save(user);
+    await internshipRepository.save(internship);
+    console.log(` Fixed internship ID ${internship.id}`);
+  }
 
-  const internship = new Internship();
-  internship.joined_date = new Date("2023-01-01");
-  internship.completion_date = new Date("2023-06-01");
-  internship.is_certified = true;
-  internship.mentor_name = "Jane Smith";
-  internship.user = user;
-
-  await internshipRepository.save(internship);
-
-  console.log("User and Internship saved successfully!");
+  console.log(" All internship dates updated to ISO format.");
+  process.exit(0);
 }
 
-main().catch(error => console.error(error));
+fixOldInternshipDates().catch((error) => {
+  console.error("Error:", error);
+  process.exit(1);
+});
