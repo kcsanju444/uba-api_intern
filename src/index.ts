@@ -1,51 +1,49 @@
-import express from 'express';
-import http from 'http';
-import compression from 'compression';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import { graphqlHTTP } from 'express-graphql';
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import { typeDefs } from './graphql/schema';  // Import GraphQL schema
-import resolver from '../src/graphql/resolver/employeeresolver';  // Import resolvers
-import router from './router/router';
+import express from "express";
+import http from "http";
+import compression from "compression";
+import dotenv from "dotenv";
+import { graphqlHTTP } from "express-graphql";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+
+import { typeDefs } from "./graphql/schema";
+import resolver from "../src/graphql/resolver/employeeresolver";
+
+import router from "./router/router";
+import intenroutes from "./router/internroutes";
+
+import { AppDataSource } from "./data-source";
 
 dotenv.config();
 
 const app = express();
+app.use(compression());
 
+AppDataSource.initialize()
+  .then(() => {
+    console.log("TypeORM Data Source initialized");
 
-const server = http.createServer(app);
-server.listen(8080, () => {
-    console.log('Server running on http://localhost:8080/');
-});
+    const server = http.createServer(app);
+    server.listen(8080, () => {
+      console.log("Server running on http://localhost:8080/");
+    });
 
-const MONGO_URL = process.env.MONGO_URL;
+    const schema = makeExecutableSchema({
+      typeDefs,
+      resolvers: resolver,
+    });
 
-if (!MONGO_URL) {
-  throw new Error('MONGO_URL is not defined in .env');
-}
+    app.use(
+      "/graphql",
+      graphqlHTTP({
+        schema: schema,
+        graphiql: true,
+      })
+    );
 
-mongoose.Promise = Promise;
-mongoose.connect(MONGO_URL);
+    app.use("/api/auth", router);
 
-mongoose.connection.on('connected', () => {
-  console.log('Connected to MongoDB');
-});
-
-mongoose.connection.on('error', (error: Error) => {
-  console.error('MongoDB connection error:', error);
-});
-
-
-// Set up GraphQL endpoint
-const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers: resolver, // Connect resolvers to the schema
-});
-
-app.use('/graphql', graphqlHTTP({
-  schema: schema,
-  graphiql: true, 
-}));
-
-app.use('/api/auth', router);
+    app.use("/api/users", intenroutes);
+  })
+  .catch((error) => {
+    console.error("Error during Data Source initialization", error);
+  });
