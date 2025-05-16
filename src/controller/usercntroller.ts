@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { findAll, findOne, createOne, updateOne, deleteOne } from '../helper/userHelper';
-
 const table = 'employee';
 
 export const getUsers = (req: Request, res: Response) => findAll(table, res);

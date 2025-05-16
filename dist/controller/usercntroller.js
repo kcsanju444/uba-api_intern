@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
+const userHelper_1 = require("../helper/userHelper");
+const table = 'employee';
+const getUsers = (req, res) => (0, userHelper_1.findAll)(table, res);
+exports.getUsers = getUsers;
+const getUserById = (req, res) => (0, userHelper_1.findOne)(table, req.params.id, res);
+exports.getUserById = getUserById;
+const createUser = (req, res) => (0, userHelper_1.createOne)(table, req.body, res);
+exports.createUser = createUser;
+const updateUser = (req, res) => (0, userHelper_1.updateOne)(table, req.params.id, req.body, res);
+exports.updateUser = updateUser;
+const deleteUser = (req, res) => (0, userHelper_1.deleteOne)(table, req.params.id, res);
+exports.deleteUser = deleteUser;

@@ -1,4 +1,4 @@
-import con from '../db';
+import con from '../../graphql/db';
 import bcrypt from 'bcrypt';
 import {
   getAllEmployees,
@@ -10,7 +10,7 @@ import {
 
 const resolver = {
   Query: {
-    employeeList() {
+ employeeList() {
       return new Promise((resolve, reject) => {
         con.query(getAllEmployees, (err, result) => {
           if (err) reject(new Error('Database error: ' + err.message));
@@ -116,3 +116,4 @@ const resolver = {
 };
 
 export default resolver;
+ 
