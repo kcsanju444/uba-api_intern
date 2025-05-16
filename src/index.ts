@@ -9,7 +9,7 @@ import { typeDefs } from "./graphql/schema";
 import resolver from "../src/graphql/resolver/employeeresolver";
 
 import router from "./router/router";
-import intenroutes from "./router/internroutes";
+// import userroutes from "./router/internroutes";
 
 import { AppDataSource } from "./data-source";
 
@@ -42,7 +42,7 @@ AppDataSource.initialize()
 
     app.use("/api/auth", router);
 
-    app.use("/api/users", intenroutes);
+    // app.use("/api/users", userroutes);
   })
   .catch((error) => {
     console.error("Error during Data Source initialization", error);
