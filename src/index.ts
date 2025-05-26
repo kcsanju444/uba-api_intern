@@ -1,59 +1,50 @@
-import express from 'express';
-import http from 'http';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import compression from 'compression';
-import cors from 'cors';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import { graphqlHTTP } from 'express-graphql';
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import { typeDefs } from './graphql/schema';  // Import GraphQL schema
-import resolver from '../src/graphql/resolver/employeeresolver';  // Import resolvers
-import router from './router/router';
+import "reflect-metadata";
+import express, { Application } from "express";
+import http from "http";
+import compression from "compression";
+import dotenv from "dotenv";
+import { buildSchema } from "type-graphql";
+import { graphqlHTTP } from "express-graphql";
+
+import { UserResolver, InternshipResolver } from "./graphql/resolver/typeormreslver";
+import { AppDataSource } from "./data-source";
+import router from "./router/router";
 
 dotenv.config();
 
-const app = express();
-app.use(cors({
-    credentials: true,
-}));
-app.use(compression());
-app.use(cookieParser());
-app.use(bodyParser.json());
+async function main() {
+  // Initialize DB connection
+  await AppDataSource.initialize();
+  console.log("TypeORM Data Source initialized");
 
-const server = http.createServer(app);
-server.listen(8080, () => {
-    console.log('Server running on http://localhost:8080/');
-});
+  // Build GraphQL schema with resolvers
+  const schema = await buildSchema({
+    resolvers: [UserResolver, InternshipResolver],
+  });
 
-const MONGO_URL = process.env.MONGO_URL;
+  // Create Express app and type explicitly
+  const app: Application = express();
+  app.use(compression());
 
-if (!MONGO_URL) {
-  throw new Error('MONGO_URL is not defined in .env');
+  // Apply GraphQL middleware (without Apollo)
+  app.use(
+    "/graphql",
+    graphqlHTTP({
+      schema: schema,
+      graphiql: true, // enables the GraphiQL UI at /graphql
+    })
+  );
+
+  // Your other REST routes
+  app.use("/api/auth", router);
+
+  // Create HTTP server and listen
+  const httpServer = http.createServer(app);
+  httpServer.listen(8080, () => {
+    console.log("Server running on http://localhost:8080/graphql");
+  });
 }
 
-mongoose.Promise = Promise;
-mongoose.connect(MONGO_URL);
-
-mongoose.connection.on('connected', () => {
-  console.log('Connected to MongoDB');
+main().catch((error) => {
+  console.error("Error starting server:", error);
 });
-
-mongoose.connection.on('error', (error: Error) => {
-  console.error('MongoDB connection error:', error);
-});
-
-// Set up GraphQL endpoint
-const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers: resolver, // Connect resolvers to the schema
-});
-
-app.use('/graphql', graphqlHTTP({
-  schema: schema,
-  graphiql: true,  // Enable GraphiQL for testing queries
-}));
-
-// Existing routes
-app.use('/api/auth', router);
