@@ -21,11 +21,11 @@ input AddEmployeeInput {
   salary: Float
   image: String!
 }
+
 input UpdateEmployeeInput {
-  id: ID!
   name: String!
   email: String!
-  password: String!
+  password: String
   position: String!
   department: String!
   address: String!
@@ -33,6 +33,9 @@ input UpdateEmployeeInput {
   image: String!
 }
 
+type AuthPayload {
+  token: String!
+}
 
 type Query {
   employeeList: [Employee!]!
@@ -43,5 +46,8 @@ type Mutation {
   addEmployee(input: AddEmployeeInput!): Employee
   updateEmployee(id: ID!, updates: UpdateEmployeeInput!): Employee
   deleteEmployee(id: ID!): Boolean
+
+  # New login mutation
+  login(email: String!, password: String!): AuthPayload!
 }
 `;

@@ -1,16 +1,16 @@
-import mysql from 'mysql';
-import dotenv from 'dotenv';
+import * as mysql from 'mysql';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 const con = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: process.env.DB2_HOST,
+  user: process.env.DB2_USERNAME,   
+  password: process.env.DB2_PASSWORD,
+  database: process.env.DB2_NAME,
+  port: Number(process.env.DB2_PORT) || 3306,  
 });
 
-// Only connect if not in test environment
 if (process.env.NODE_ENV !== 'test') {
   con.connect((err) => {
     if (err) {

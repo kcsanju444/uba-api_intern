@@ -10,7 +10,7 @@ export class Internship {
   id!: number;
 
   @Field(() => Date)
-@Column({ type: "timestamp" })
+@Column({ type: "timestamp" }) // use timestamp instead of date
 joined_date!: Date;
 
 @Field(() => Date)
