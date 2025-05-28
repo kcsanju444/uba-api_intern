@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Field, ObjectType } from "type-graphql";
 import { Internship } from "./internshipentities";
@@ -14,7 +15,7 @@ export class User {
   name!: string;
 
   @Field()
-  @Column({ unique: true }) 
+  @Column({ unique: true })
   email!: string;
 
   @Field(() => [Internship])

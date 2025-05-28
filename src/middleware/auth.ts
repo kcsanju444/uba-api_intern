@@ -25,7 +25,6 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     (err: VerifyErrors | null, decoded: JwtPayload | string | undefined) => {
       if (err) return res.status(403).json({ Status: false, Error: "Invalid Token" });
 
-      // If decoded is a string, you might want to handle that case separately
       if (typeof decoded === "object" && decoded !== null) {
         req.user = decoded as TokenPayload;
       } else {
