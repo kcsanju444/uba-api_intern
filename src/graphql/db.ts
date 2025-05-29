@@ -1,14 +1,14 @@
-import * as mysql from 'mysql';
+import * as mysql from 'mysql2'; // change from 'mysql' to 'mysql2'
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 const con = mysql.createConnection({
   host: process.env.DB2_HOST,
-  user: process.env.DB2_USERNAME,   
+  user: process.env.DB2_USERNAME,
   password: process.env.DB2_PASSWORD,
   database: process.env.DB2_NAME,
-  port: Number(process.env.DB2_PORT) || 3306,  
+  port: Number(process.env.DB2_PORT) || 3306,
 });
 
 if (process.env.NODE_ENV !== 'test') {

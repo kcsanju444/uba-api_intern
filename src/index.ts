@@ -3,48 +3,40 @@ import express, { Application } from "express";
 import http from "http";
 import compression from "compression";
 import dotenv from "dotenv";
-import { buildSchema } from "type-graphql";
-import { graphqlHTTP } from "express-graphql";
-
-import { UserResolver, InternshipResolver } from "./graphql/resolver/typeormreslver";
-import { AppDataSource } from "./data-source";
-import router from "./router/router";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import { employeeRouter } from "./authentication/routes/employeerouter";
+import { adminRouter } from "./authentication/routes/adminrouter";
 
 dotenv.config();
 
-async function main() {
-  // Initialize DB connection
-  await AppDataSource.initialize();
-  console.log("TypeORM Data Source initialized");
+const app: Application = express();
 
-  // Build GraphQL schema with resolvers
-  const schema = await buildSchema({
-    resolvers: [UserResolver, InternshipResolver],
-  });
+// Allow requests from anywhere (you can tighten this later if needed)
+app.use(cors());
 
-  // Create Express app and type explicitly
-  const app: Application = express();
-  app.use(compression());
+// Parse JSON bodies
+app.use(express.json());
 
-  // Apply GraphQL middleware (without Apollo)
-  app.use(
-    "/graphql",
-    graphqlHTTP({
-      schema: schema,
-      graphiql: true, // enables the GraphiQL UI at /graphql
-    })
-  );
+// Parse cookies
+app.use(cookieParser());
 
-  // Your other REST routes
-  app.use("/api/auth", router);
+// Use gzip compression
+app.use(compression());
 
-  // Create HTTP server and listen
-  const httpServer = http.createServer(app);
-  httpServer.listen(8080, () => {
-    console.log("Server running on http://localhost:8080/graphql");
-  });
-}
+// Root route to verify server is running
+app.get('/', (req, res) => {
+  res.send('API is running');
+});
 
-main().catch((error) => {
-  console.error("Error starting server:", error);
+// Mount your routers
+app.use("/api/employee", employeeRouter);
+app.use("/api/admin", adminRouter);
+
+const httpServer = http.createServer(app);
+
+const PORT = process.env.PORT || 8080;
+
+httpServer.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
